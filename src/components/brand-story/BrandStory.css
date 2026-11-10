@@ -1,0 +1,136 @@
+/* ===== Câu chuyện thương hiệu: thiệp cưới gập ba mở ra (CSS 3D + GSAP) ===== */
+
+.bs-section {
+  /* Kích thước thiệp khi đã mở: ba tấm rộng bằng phần nội dung của navbar (max-w-7xl, lề 2rem).
+     --w là bề rộng một tấm; chiều cao co lại nếu khung nhìn thấp để thiệp luôn nằm trọn dưới navbar. */
+  --w: min(calc((100vw - 4rem) / 3), 405.33px);
+  --h: min(calc(var(--w) * 1.72), calc(100svh - 150px));
+  --r: calc(var(--w) * 0.014);
+
+  position: relative;
+  height: 100svh;
+  min-height: 640px;
+  overflow: hidden;
+}
+
+/* Màn che và nút bỏ qua chỉ có khi hiệu ứng mở thiệp được bật (.bs-armed) */
+.bs-veil, .bs-skip { display: none; }
+.bs-armed .bs-veil, .bs-armed .bs-skip { display: block; }
+.bs-veil { position: absolute; inset: 0; background: var(--color-paper); pointer-events: none; }
+.bs-skip {
+  position: absolute;
+  right: clamp(16px, 3vw, 40px);
+  top: 96px;
+  z-index: 5;
+  padding: 10px 4px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: #282320;
+  opacity: 0.55;
+  transition: opacity 0.3s;
+}
+.bs-skip:hover, .bs-skip:focus-visible { opacity: 1; }
+
+/* ---------- Thiệp ---------- */
+.bs-scene { position: absolute; inset: 0; perspective: 1800px; perspective-origin: 50% 45%; }
+.bs-card {
+  position: absolute;
+  left: 50%;
+  top: calc(50% + 36px);
+  width: 0;
+  height: 0;
+  transform-style: preserve-3d;
+  /* Mọi cỡ chữ trên thiệp tính theo em nên thiệp co giãn như một vật thể */
+  font-size: calc(var(--w) / 20);
+  color: #282320;
+}
+.bs-shadow {
+  position: absolute;
+  left: calc(var(--w) * -1.5);
+  top: calc(var(--h) / -2 + var(--w) * 0.07);
+  width: calc(var(--w) * 3);
+  height: var(--h);
+  background: rgba(70, 50, 30, 0.36);
+  filter: blur(calc(var(--w) * 0.08));
+  transform: translateZ(-2px);
+}
+
+.bs-panel { position: absolute; top: calc(var(--h) / -2); width: var(--w); height: var(--h); transform-style: preserve-3d; }
+.bs-center { left: calc(var(--w) / -2); }
+/* Mỗi tấm bên xoay quanh nếp gập của chính nó */
+.bs-left { left: calc(var(--w) * -1.5); transform-origin: right center; }
+.bs-right { left: calc(var(--w) / 2); transform-origin: left center; }
+
+.bs-face {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  backface-visibility: hidden;
+  background-color: #fffdf8;
+  background-size: cover;
+  box-shadow: inset 0 0 0 1px rgba(183, 160, 135, 0.28);
+}
+.bs-face-out { transform: rotateY(180deg); }
+.bs-left .bs-face-in, .bs-right .bs-face-out { border-radius: var(--r) 0 0 var(--r); }
+.bs-right .bs-face-in, .bs-left .bs-face-out { border-radius: 0 var(--r) var(--r) 0; }
+
+/* Bóng lõm ở nếp gập, bóng tối dần khi tấm dựng lên, bóng tấm bên đổ lên tấm giữa */
+.bs-fold, .bs-shade, .bs-cast { position: absolute; inset: 0; pointer-events: none; }
+.bs-left .bs-fold { background: linear-gradient(to left, rgba(40, 35, 32, 0.16), transparent 9%); }
+.bs-right .bs-fold { background: linear-gradient(to right, rgba(40, 35, 32, 0.16), transparent 9%); }
+.bs-center .bs-fold {
+  background:
+    linear-gradient(to right, rgba(40, 35, 32, 0.13), transparent 7%),
+    linear-gradient(to left, rgba(40, 35, 32, 0.13), transparent 7%);
+}
+.bs-shade { background: #2a2018; opacity: var(--sh, 0); }
+.bs-cast { opacity: 0; }
+.bs-cast-l { background: linear-gradient(to right, rgba(30, 22, 14, 0.5), transparent 75%); }
+.bs-cast-r { background: linear-gradient(to left, rgba(30, 22, 14, 0.5), transparent 75%); }
+
+/* ---------- Nội dung in trên thiệp ---------- */
+.bs-inner, .bs-cover, .bs-out-plain {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85em;
+  padding: 2.2em 1.7em;
+  text-align: center;
+}
+.bs-inner::before, .bs-cover::before { content: ""; position: absolute; inset: 0.9em; border: 1px solid rgba(183, 160, 135, 0.6); }
+.bs-cover::after { content: ""; position: absolute; inset: 1.15em; border: 1px solid rgba(183, 160, 135, 0.3); }
+.bs-label { font-size: 0.62em; font-weight: 600; letter-spacing: 0.32em; margin-right: -0.32em; text-transform: uppercase; color: #b7a087; }
+.bs-small { font-size: 0.5em; color: #8a7d70; }
+.bs-heading { display: flex; flex-direction: column; align-items: center; gap: 0.85em; font-weight: inherit; }
+.bs-title { white-space: nowrap; font-family: var(--font-story), Georgia, serif; font-size: 2.05em; font-weight: 500; letter-spacing: 0.1em; margin-right: -0.1em; line-height: 1; text-transform: uppercase; }
+.bs-oflove { font-family: var(--font-story), Georgia, serif; font-size: 2.4em; font-style: italic; line-height: 0.8; margin-top: -0.3em; color: #b7a087; }
+.bs-serif { font-family: var(--font-story), Georgia, serif; font-size: 1.25em; line-height: 1.35; }
+.bs-quote { font-family: var(--font-story), Georgia, serif; font-size: 1.65em; font-style: italic; line-height: 1.25; }
+.bs-rule { width: 2.4em; height: 1px; background: #b7a087; }
+.bs-ornament { width: 40%; height: auto; }
+.bs-arch { flex: none; height: min(18.7em, calc(var(--h) - 13.5em)); aspect-ratio: 3 / 4; margin: 0.3em 0; padding: 0.35em; border: 1px solid #b7a087; border-radius: 999px 999px 0 0; }
+.bs-arch-photo { width: 100%; height: 100%; border-radius: inherit; background-size: cover; background-position: center; }
+.bs-cover img { width: 48%; height: auto; }
+.bs-cover-name { font-family: var(--font-story), Georgia, serif; font-size: 1.9em; font-weight: 500; letter-spacing: 0.18em; margin-right: -0.18em; text-transform: uppercase; }
+.bs-cover-sub { font-family: var(--font-story), Georgia, serif; font-size: 1.35em; }
+.bs-cover-sub em { color: #b7a087; }
+.bs-out-plain span { width: 2.4em; height: 1px; background: #b7a087; }
+
+/* ---------- Màn hình hẹp: ba tấm xếp dọc như ba tấm thiệp rời, không dựng 3D ---------- */
+@media (max-width: 899px) {
+  .bs-section { --w: min(86vw, 400px); --h: auto; height: auto; min-height: 0; padding: 96px 0 64px; }
+  .bs-scene { position: static; perspective: none; }
+  .bs-card { position: static; display: flex; flex-direction: column; align-items: center; gap: 20px; width: auto; height: auto; font-size: calc(var(--w) / 19); }
+  .bs-shadow, .bs-fold, .bs-shade, .bs-cast, .bs-face-out { display: none; }
+  .bs-panel { position: relative; left: auto; top: auto; height: auto; }
+  .bs-left { order: 2; }
+  .bs-right { order: 3; }
+  .bs-face { position: relative; border-radius: var(--r) !important; box-shadow: inset 0 0 0 1px rgba(183, 160, 135, 0.28), 0 24px 50px -28px rgba(90, 65, 40, 0.45); }
+  .bs-inner { position: relative; padding: 3em 1.7em; }
+  .bs-arch { width: 70%; height: auto; }
+}

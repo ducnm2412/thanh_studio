@@ -1,0 +1,223 @@
+@import "tailwindcss";
+
+@theme inline {
+  /* ===== Bảng màu chung của cả trang (luxury wedding editorial) =====
+     Ivory là nền chủ đạo; sheet và sand chỉ để phân biệt nhẹ; charcoal cho chữ, nút và footer;
+     nâu nhạt chỉ dùng làm điểm nhấn nhỏ. Tên cũ (paper, cream, ink, gold…) giữ lại để các section
+     đã viết từ trước tự đổi theo. */
+  --color-ivory: #f5f0e8;
+  --color-sheet: #fffdf9;
+  --color-sand: #eae1d5;
+  --color-taupe: #d8c8b8;
+  --color-charcoal: #28231f;
+  --color-brown: #a68b75;
+  --color-secondary: #675b50;
+
+  --color-paper: #f5f0e8; /* = ivory */
+  --color-cream: #eae1d5; /* = sand */
+  --color-ink: #28231f; /* = charcoal */
+  --color-muted: #675b50; /* chữ phụ: đậm hơn secondary để đủ tương phản trên nền ivory (khoảng 6:1) */
+  --color-line: #d8c8b8; /* = taupe */
+  --color-gold: #7d5f45; /* chữ nhấn: nâu đậm hơn #a68b75 để đọc được trên nền ivory (khoảng 5.4:1) */
+  --color-blush: #eae1d5; /* không còn dùng hồng: trỏ về sand */
+  --color-mist: #f5f0e8;
+  --color-champagne: #d8c8b8;
+
+  --font-serif: var(--font-montserrat);
+  --font-sans: var(--font-montserrat);
+  --font-blackletter: var(--font-montserrat);
+  --font-script: var(--font-script);
+  --font-didone: var(--font-montserrat);
+  --font-condensed: var(--font-condensed);
+  /* Tiêu đề serif của các section editorial */
+  --font-display: var(--font-story);
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-montserrat), system-ui, sans-serif;
+}
+
+/* Nền giấy có vân rất nhẹ */
+.paper {
+  background-color: var(--color-paper);
+  background-image: radial-gradient(rgba(43, 38, 34, 0.035) 1px, transparent 1px);
+  background-size: 3px 3px;
+}
+
+.rule-double {
+  border-top: 1px solid var(--color-ink);
+  border-bottom: 1px solid var(--color-ink);
+  padding: 6px 0;
+  position: relative;
+}
+
+.dropcap::first-letter {
+  float: left;
+  font-family: var(--font-serif);
+  font-size: 4.2em;
+  line-height: 0.8;
+  padding: 0.08em 0.1em 0 0;
+}
+
+.eyebrow {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+@keyframes kenburns {
+  from { transform: scale(1); }
+  to { transform: scale(1.08); }
+}
+.kenburns { animation: kenburns 7s ease-out both; }
+
+@keyframes spin-slow { to { transform: rotate(360deg); } }
+.spin-slow { animation: spin-slow 28s linear infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .kenburns, .spin-slow { animation: none; }
+}
+
+/* Hero: lớp chiều sâu */
+.layer {
+  will-change: transform;
+  transform: translate3d(
+    calc(var(--mx, 0) * var(--d) * 36px),
+    calc(var(--my, 0) * var(--d) * 24px + var(--sy, 0) * var(--d) * -0.35px),
+    0
+  );
+}
+@keyframes floaty {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -10px; }
+}
+.floaty { animation: floaty 6s ease-in-out infinite; }
+@keyframes twinkle {
+  0%, 100% { opacity: 1; scale: 1; }
+  50% { opacity: .35; scale: .8; }
+}
+.twinkle { animation: twinkle 3.2s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.sticker {
+  filter: drop-shadow(0 0 0 #fff) drop-shadow(3px 0 0 #fff) drop-shadow(-3px 0 0 #fff)
+    drop-shadow(0 3px 0 #fff) drop-shadow(0 -3px 0 #fff) drop-shadow(0 30px 30px rgba(0,0,0,.25));
+}
+@media (prefers-reduced-motion: reduce) {
+  .floaty, .twinkle { animation: none; }
+  .layer { transform: none; }
+}
+
+@keyframes album-in {
+  from { opacity: 0; transform: translateY(16px) scale(.985); }
+  to { opacity: 1; transform: none; }
+}
+.album-in { animation: album-in .7s cubic-bezier(.2,.7,.2,1) both; }
+
+html { scroll-padding-top: 80px; }
+
+/* Phong cách hiện đại tối giản: tiêu đề mảnh, giãn chữ */
+@layer base {
+  h1, h2, h3 { font-weight: 300; }
+}
+.font-serif, .font-didone { letter-spacing: 0.01em; }
+
+/* ===== Chuyển cảnh giữa các album ===== */
+/* Tan mờ điện ảnh: bìa cũ phóng nhẹ rồi chìm xuống, bìa mới hiện dần và thu về đúng khung */
+.cover-out { z-index: 1; animation: cover-sink 1.05s cubic-bezier(.4,0,.2,1) forwards; }
+.cover-in { z-index: 2; animation: cover-bloom 1.05s cubic-bezier(.4,0,.2,1) both; }
+@keyframes cover-sink { to { transform: scale(1.06); filter: brightness(.55); } }
+@keyframes cover-bloom { from { opacity: 0; transform: scale(1.05); } }
+.cover-in .rv-bg { animation: rv-bg 1.8s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes rv-bg { from { transform: scale(1.18); } }
+.cover-in .rv-char { animation: rv-char .9s cubic-bezier(.2,.8,.2,1) both; animation-delay: calc(.35s + var(--i) * 45ms); }
+@keyframes rv-char { from { opacity: 0; transform: translateY(60%) rotate(4deg); filter: blur(6px); } }
+.cover-in .rv-cutout { animation: rv-cutout 1.2s cubic-bezier(.2,.8,.2,1) .3s both; }
+@keyframes rv-cutout { from { opacity: 0; translate: 0 4%; scale: 1.04; filter: blur(8px); } }
+.cover-in .rv-up { animation: rv-up .9s cubic-bezier(.2,.8,.2,1) .6s both; }
+@keyframes rv-up { from { opacity: 0; transform: translateY(30px); } }
+.cover-in .rv-card { animation: rv-card .9s cubic-bezier(.2,.8,.2,1) both; animation-delay: calc(.7s + var(--i) * 110ms); }
+@keyframes rv-card { from { opacity: 0; transform: translateY(40px) scale(.92); } }
+.progress-fill { width: 0; animation-name: progress-fill; animation-timing-function: linear; animation-fill-mode: forwards; }
+@keyframes progress-fill { to { width: 100%; } }
+@media (prefers-reduced-motion: reduce) {
+  .cover-in, .cover-out, .cover-in .rv-bg, .cover-in .rv-char, .cover-in .rv-cutout, .cover-in .rv-up, .cover-in .rv-card {
+    animation-duration: 1ms !important; animation-delay: 0s !important;
+  }
+}
+
+/* ===== Hero: hiệu ứng xuất hiện =====
+   Mỗi phần tử .he bắt đầu ở giây --t. Khi intro album đang chạy thì tạm dừng ở trạng thái ẩn,
+   đến lúc intro tan (html[data-hero="go"]) hoặc đã xem xong mới chạy. */
+.he { animation: he-up 1.1s cubic-bezier(.2,.8,.2,1) both; animation-delay: calc(var(--t, 0) * 1s); }
+html[data-intro="playing"]:not([data-hero="go"]) .he { animation-play-state: paused; }
+.he-fade { animation-name: he-fade; animation-duration: 1.6s; }
+.he-char { animation-name: he-char; animation-duration: 1.2s; }
+.he-couple { animation-name: he-couple; animation-duration: 1.5s; }
+.he-card-r { animation-name: he-card-r; animation-duration: 1.3s; }
+.he-card-l { animation-name: he-card-l; animation-duration: 1.3s; }
+.he-pop { animation-name: he-pop; animation-timing-function: cubic-bezier(.3,1.5,.5,1); }
+.he-left { animation-name: he-left; }
+.he-down { animation-name: he-down; }
+@keyframes he-up { from { opacity: 0; transform: translateY(36px); } }
+@keyframes he-down { from { opacity: 0; transform: translateY(-36px); } }
+@keyframes he-left { from { opacity: 0; transform: translateX(-30px); } }
+@keyframes he-fade { from { opacity: 0; } }
+@keyframes he-char { from { opacity: 0; transform: translateY(45%) scaleY(1.15); filter: blur(10px); } }
+@keyframes he-couple { from { opacity: 0; transform: translateY(5%) scale(1.05); filter: blur(12px); } }
+@keyframes he-card-r { from { opacity: 0; transform: translate(35%, -12%) rotate(16deg) scale(.85); } }
+@keyframes he-card-l { from { opacity: 0; transform: translate(-35%, 12%) rotate(-14deg) scale(.85); } }
+@keyframes he-pop { from { opacity: 0; transform: scale(.2) rotate(-90deg); } }
+/* Khi ảnh cuối của intro album bắt đầu lớn ra, ảnh nền Hero đã phải nằm sẵn đúng chỗ bên dưới */
+html[data-hero] .he-scene { animation: none; }
+
+/* Ảnh nền Hero phủ kín khung (tỉ lệ ảnh gốc 2048×1376), ưu tiên giữ cặp đôi trong khung.
+   Ảnh nền và ảnh cặp đôi tách nền dùng chung khung này nên luôn trùng khít nhau. */
+.hero-photo {
+  --hh: clamp(680px, 100svh, 1050px);
+  --sw: max(100vw, calc(var(--hh) * 1.4884));
+  --sh: calc(var(--sw) / 1.4884);
+  position: absolute;
+  width: var(--sw);
+  height: var(--sh);
+  left: clamp(calc(100vw - var(--sw)), calc(50vw - 0.41 * var(--sw)), 0px);
+  top: calc((var(--hh) - var(--sh)) * 0.15);
+}
+@media (prefers-reduced-motion: reduce) { .he { animation: none; } }
+
+/* ===== Hệ editorial dùng chung cho các section dưới Hero ===== */
+/* Tiêu đề hiện từng dòng: mỗi dòng có mép che riêng (chừa chỗ cho dấu tiếng Việt) */
+.ln { display: block; overflow: hidden; padding: 0.2em 0 0.14em; margin: -0.2em 0 -0.14em; }
+.ln > span { display: block; }
+
+/* Đổi câu chuyện ở "Thư từ các cặp đôi": ảnh mới quét vào từ trái, chữ hiện từng dòng */
+.ed-swap-img { animation: ed-wipe 1s cubic-bezier(.65,0,.35,1) both; }
+@keyframes ed-wipe { from { clip-path: inset(0 100% 0 0); transform: scale(1.06); } to { clip-path: inset(0 0 0 0); transform: none; } }
+.ed-swap-line { animation: ed-line .8s cubic-bezier(.2,.8,.2,1) both; animation-delay: calc(var(--i, 0) * 110ms + 150ms); }
+@keyframes ed-line { from { opacity: 0; transform: translateY(18px); } }
+.ed-quote-mark { display: block; height: 0.42em; animation: ed-float 6s ease-in-out infinite; }
+@keyframes ed-float { 50% { transform: translateY(-6px); } }
+
+/* Nút gửi: màu ivory tràn vào từ trái khi rê chuột */
+.ed-fill { position: relative; overflow: hidden; transition: color .45s ease; }
+.ed-fill::before { content: ""; position: absolute; inset: 0; background: var(--color-paper); transform: scaleX(0); transform-origin: left; transition: transform .45s cubic-bezier(.65,0,.35,1); }
+.ed-fill > span { position: relative; }
+.ed-fill:hover, .ed-fill:focus-visible { color: var(--color-ink); }
+.ed-fill:hover::before, .ed-fill:focus-visible::before { transform: scaleX(1); }
+
+/* Liên kết ở footer: gạch chân chạy ra khi rê chuột */
+.ed-link { position: relative; display: inline-block; opacity: .95; transition: opacity .3s; }
+.ed-link::after { content: ""; position: absolute; left: 0; right: 0; bottom: -2px; height: 1px; background: currentColor; transform: scaleX(0); transform-origin: left; transition: transform .4s cubic-bezier(.65,0,.35,1); }
+.ed-link:hover { opacity: 1; }
+.ed-link:hover::after { transform: scaleX(1); }
+
+/* Chấm đánh dấu trên bản đồ, nhịp rất nhẹ */
+.ed-pulse { width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 50%; background: var(--color-ink); box-shadow: 0 0 0 3px var(--color-paper); }
+.ed-pulse::after { content: ""; position: absolute; inset: -3px; border-radius: 50%; border: 1px solid var(--color-ink); animation: ed-pulse 2.8s ease-out infinite; }
+@keyframes ed-pulse { from { transform: scale(1); opacity: .6; } to { transform: scale(4); opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .ed-swap-img, .ed-swap-line, .ed-quote-mark, .ed-pulse::after { animation: none; }
+}

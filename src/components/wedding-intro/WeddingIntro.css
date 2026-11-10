@@ -1,0 +1,293 @@
+/* ===== Intro: mở album cưới (CSS 3D, điều khiển bằng GSAP) ===== */
+
+.wi-root {
+  /* Kích thước sách: mọi thứ tính theo bề rộng một trang --W */
+  --W: min(24vw, 44vh);
+  --H: calc(var(--W) * 4 / 3);
+  --T: calc(var(--W) * 0.11); /* độ dày ruột giấy */
+  --B: calc(var(--W) * 0.012); /* độ dày bìa cứng */
+  --o: calc(var(--W) * 0.018); /* phần bìa chìa ra ngoài ruột giấy */
+  --Ts: calc(var(--T) + var(--B) * 2); /* chiều cao gáy */
+  --r: calc(var(--W) * 0.014);
+
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 50% 40%, #fbf7ef 0%, #f6f0e6 55%, #ece3d4 100%);
+  color: #282320;
+  /* Nếu JavaScript lỗi thì lớp phủ tự biến mất, không chặn trang chủ */
+  animation: wi-failsafe 1ms 20s forwards;
+}
+@media (max-width: 899px) {
+  .wi-root { --W: min(40vw, 44vh); }
+}
+html[data-intro="done"] .wi-root { display: none; }
+@keyframes wi-failsafe { to { visibility: hidden; pointer-events: none; } }
+
+.wi-veil { position: absolute; inset: 0; background: #f6f0e6; pointer-events: none; }
+
+.wi-skip {
+  position: absolute;
+  right: clamp(16px, 3vw, 40px);
+  top: clamp(16px, 3vh, 32px);
+  z-index: 5;
+  padding: 10px 4px;
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: #282320;
+  opacity: 0.55;
+  transition: opacity 0.3s;
+}
+.wi-skip:hover, .wi-skip:focus-visible { opacity: 1; }
+
+.wi-flat {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  visibility: hidden;
+  opacity: 0;
+  background-size: cover;
+  background-repeat: no-repeat;
+  /* --f: bề rộng dải mờ ở bốn mép (%), tăng dần khi ảnh lớn ra để hoà vào nền */
+  --f: 0;
+  -webkit-mask-image:
+    linear-gradient(to right, transparent, #000 calc(var(--f) * 1%), #000 calc(100% - var(--f) * 1%), transparent),
+    linear-gradient(to bottom, transparent, #000 calc(var(--f) * 1%), #000 calc(100% - var(--f) * 1%), transparent);
+  mask-image:
+    linear-gradient(to right, transparent, #000 calc(var(--f) * 1%), #000 calc(100% - var(--f) * 1%), transparent),
+    linear-gradient(to bottom, transparent, #000 calc(var(--f) * 1%), #000 calc(100% - var(--f) * 1%), transparent);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}
+
+/* ---------- Sân khấu 3D ---------- */
+.wi-stage { position: absolute; inset: 0; perspective: 1900px; perspective-origin: 50% 42%; }
+.wi-cam, .wi-book { position: absolute; width: 0; height: 0; transform-style: preserve-3d; }
+.wi-cam { left: 50%; top: 50%; transform: rotateX(50deg) scale(0.85); }
+.wi-book { left: 0; top: 0; }
+
+/* Mép đứng của một tấm phẳng (con của mặt trên, gập xuống dưới) */
+.wi-edge-b { position: absolute; left: 0; top: 100%; width: 100%; height: var(--th); transform-origin: top; transform: rotateX(-90deg); }
+.wi-edge-r { position: absolute; left: 100%; top: 0; width: var(--th); height: 100%; transform-origin: left; transform: rotateY(90deg); }
+.wi-edge-l { position: absolute; right: 100%; top: 0; width: var(--th); height: 100%; transform-origin: right; transform: rotateY(-90deg); }
+.wi-board { background-size: cover; filter: brightness(0.88); }
+
+/* ---------- Bóng đổ trên mặt bàn ---------- */
+.wi-shadow {
+  position: absolute;
+  left: calc(var(--W) * -0.03);
+  top: calc(var(--H) / -2 + var(--W) * 0.05);
+  width: calc(var(--W) * 1.1);
+  height: calc(var(--H) * 1.02);
+  border-radius: 8%;
+  background: rgba(70, 50, 30, 0.45);
+  filter: blur(calc(var(--W) * 0.07));
+}
+.wi-shadow-l { left: calc(var(--W) * -1.12); opacity: 0; background: rgba(70, 50, 30, 0.32); }
+
+/* ---------- Bìa sau ---------- */
+.wi-back {
+  --th: var(--B);
+  position: absolute;
+  left: 0;
+  top: calc(var(--H) / -2 - var(--o));
+  width: calc(var(--W) + var(--o));
+  height: calc(var(--H) + var(--o) * 2);
+  transform: translateZ(var(--B));
+  transform-style: preserve-3d;
+  background-size: cover;
+  border-radius: 0 var(--r) var(--r) 0;
+}
+
+/* ---------- Ruột giấy ---------- */
+.wi-block {
+  --th: var(--T);
+  position: absolute;
+  left: 0;
+  top: calc(var(--H) / -2);
+  width: var(--W);
+  height: var(--H);
+  transform: translateZ(calc(var(--B) + var(--T)));
+  transform-style: preserve-3d;
+}
+.wi-paper-b {
+  background:
+    linear-gradient(to right, rgba(60, 45, 30, 0.3), transparent 7%),
+    linear-gradient(to bottom, rgba(60, 45, 30, 0.12), transparent 30%),
+    repeating-linear-gradient(to bottom, #fcf8f0 0 1.1px, #e0d4c0 1.1px 2px);
+}
+.wi-paper-r {
+  background:
+    linear-gradient(to right, rgba(60, 45, 30, 0.12), transparent 30%),
+    repeating-linear-gradient(to right, #fcf8f0 0 1.1px, #e0d4c0 1.1px 2px);
+}
+.wi-paper-l { background: linear-gradient(to left, #cdbfa7, #b9aa90); }
+.wi-cast {
+  position: absolute;
+  inset: 0;
+  transform: translateZ(0.5px);
+  background: linear-gradient(to right, rgba(30, 22, 14, 0.55), rgba(30, 22, 14, 0.18) 35%, transparent 75%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ---------- Trang giấy ---------- */
+.wi-face { position: absolute; inset: 0; overflow: hidden; backface-visibility: hidden; }
+.wi-face-back { transform: rotateY(180deg); }
+.wi-slice { position: absolute; top: 0; width: var(--W); height: 100%; }
+.wi-pg { position: absolute; inset: 0; background-color: #fffdf8; background-size: cover; }
+.wi-pg::before { content: ""; position: absolute; inset: 0; z-index: 2; background: #201810; opacity: var(--shade, 0); pointer-events: none; }
+.wi-pg::after { content: ""; position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+/* Bóng lõm ở sát gáy + mép giấy hơi sáng */
+.wi-pg-right::after {
+  background:
+    linear-gradient(to right, rgba(40, 35, 32, 0.36), rgba(40, 35, 32, 0.1) 5%, transparent 17%),
+    linear-gradient(to left, rgba(40, 35, 32, 0.07), transparent 7%);
+}
+.wi-pg-left::after {
+  background:
+    linear-gradient(to left, rgba(40, 35, 32, 0.36), rgba(40, 35, 32, 0.1) 5%, transparent 17%),
+    linear-gradient(to right, rgba(40, 35, 32, 0.07), transparent 7%);
+}
+.wi-photo {
+  position: absolute;
+  inset: calc(var(--W) * 0.06);
+  background-size: cover;
+  background-repeat: no-repeat;
+  box-shadow: 0 0 0 1px rgba(40, 35, 32, 0.08);
+}
+.wi-titlepage {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--W) * 0.03);
+  font-family: var(--font-montserrat), sans-serif;
+  text-align: center;
+}
+.wi-titlepage img { width: 36%; height: auto; }
+.wi-tp-name { font-size: calc(var(--W) * 0.06); font-weight: 500; letter-spacing: 0.26em; margin-right: -0.26em; }
+.wi-tp-sub { font-size: calc(var(--W) * 0.03); letter-spacing: 0.34em; margin-right: -0.34em; text-transform: uppercase; color: #8a7d70; }
+.wi-tp-rule { width: 12%; height: 1px; background: #b7a087; }
+.wi-tp-city { font-size: calc(var(--W) * 0.034); font-style: italic; color: #8a7d70; }
+.wi-tp-quote { font-size: calc(var(--W) * 0.05); font-style: italic; font-weight: 300; line-height: 1.7; color: #8a7d70; }
+
+/* Tờ giấy lật: chuỗi dải lồng nhau, mỗi dải gập thêm --bend độ so với dải trước */
+.wi-seg {
+  position: absolute;
+  top: 0;
+  width: calc(var(--W) / 6);
+  height: var(--H);
+  transform-style: preserve-3d;
+  transform-origin: left center;
+}
+/* Mỗi dải rộng hơn 0,75px về hai phía để các dải chồng mép lên nhau, không lộ khe */
+.wi-seg > .wi-face { left: -0.75px; right: auto; width: calc(100% + 1.5px); }
+.wi-seg > .wi-face > .wi-slice { margin-left: 0.75px; }
+.wi-leaf { left: 0; top: calc(var(--H) / -2); }
+.wi-seg-child { left: 100%; transform: rotateY(calc(var(--bend, 0) * 1deg)); }
+
+/* ---------- Gáy và bìa trước ---------- */
+.wi-spine-g {
+  position: absolute;
+  left: 0;
+  top: calc(var(--H) / -2 - var(--o));
+  width: 0;
+  height: calc(var(--H) + var(--o) * 2);
+  transform-style: preserve-3d;
+  transform-origin: left center;
+}
+.wi-spine {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--Ts);
+  height: 100%;
+  transform-origin: left center;
+  transform: rotateY(-90deg);
+  transform-style: preserve-3d;
+}
+.wi-spine-out, .wi-spine-in { position: absolute; inset: 0; backface-visibility: hidden; }
+.wi-spine-out { background-size: cover; }
+.wi-spine-out::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to right, rgba(50, 35, 20, 0.3), rgba(50, 35, 20, 0.08) 35%, rgba(255, 255, 255, 0.08) 60%, rgba(50, 35, 20, 0.22)),
+    linear-gradient(to bottom,
+      transparent 9%, rgba(60, 40, 20, 0.22) 9% 9.5%, rgba(255, 255, 255, 0.25) 9.5% 10%, transparent 10% 12%,
+      rgba(60, 40, 20, 0.22) 12% 12.5%, rgba(255, 255, 255, 0.25) 12.5% 13%, transparent 13% 87%,
+      rgba(60, 40, 20, 0.22) 87% 87.5%, rgba(255, 255, 255, 0.25) 87.5% 88%, transparent 88% 90%,
+      rgba(60, 40, 20, 0.22) 90% 90.5%, rgba(255, 255, 255, 0.25) 90.5% 91%, transparent 91%);
+}
+.wi-spine-in { transform: rotateY(180deg); background: linear-gradient(to right, #c9bba3, #dbcfbb 50%, #c4b59c); }
+
+.wi-cover-w { position: absolute; left: 0; top: 0; width: 0; height: 100%; transform: translateZ(var(--Ts)); transform-style: preserve-3d; }
+.wi-cover {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: calc(var(--W) + var(--o));
+  height: 100%;
+  transform-origin: left center;
+  transform-style: preserve-3d;
+}
+.wi-cover-front {
+  --th: var(--B);
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  background-size: 100% 100%;
+  border-radius: 0 var(--r) var(--r) 0;
+}
+.wi-cover-front::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    linear-gradient(to right, rgba(60, 40, 20, 0.22), rgba(255, 255, 255, 0.14) 3%, transparent 6%),
+    linear-gradient(118deg, rgba(255, 255, 255, 0.2), transparent 42%, rgba(70, 50, 30, 0.1));
+  pointer-events: none;
+}
+.wi-cover-title {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--W) * 0.035);
+  transform: translateY(-5%);
+  font-family: var(--font-montserrat), sans-serif;
+  text-align: center;
+  /* Chữ dập chìm trên vải */
+  color: rgba(104, 86, 66, 0.72);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.65), 0 -1px 1px rgba(60, 40, 20, 0.25);
+}
+.wi-cover-title p:first-child { font-size: calc(var(--W) * 0.056); font-weight: 500; letter-spacing: 0.26em; margin-right: -0.26em; }
+.wi-cover-title p:last-child { font-size: calc(var(--W) * 0.026); font-weight: 500; letter-spacing: 0.36em; margin-right: -0.36em; }
+.wi-cover-title span { width: 9%; height: 1px; background: rgba(104, 86, 66, 0.5); box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6); }
+.wi-cover-in {
+  position: absolute;
+  inset: 0;
+  transform: translateZ(calc(var(--B) * -1)) rotateY(180deg);
+  backface-visibility: hidden;
+  background-size: cover;
+  border-radius: var(--r) 0 0 var(--r);
+}
+.wi-cover-in > div {
+  position: absolute;
+  inset: 3.2% 0 3.2% 3.5%;
+  background-size: cover;
+  box-shadow: inset -18px 0 24px -14px rgba(40, 35, 32, 0.35);
+}
